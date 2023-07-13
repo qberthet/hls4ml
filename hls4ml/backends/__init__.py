@@ -8,8 +8,7 @@ from hls4ml.backends.vivado_accelerator.vivado_accelerator_config import VivadoA
 
 #[K] start
 from hls4ml.backends.vitis_accelerator.vitis_accelerator_backend import VitisAcceleratorBackend
-#from hls4ml.backends.vitis_accelerator.vitis_accelerator_config import VitisAcceleratorConfig
-#[K] end
+from hls4ml.backends.vitis_accelerator.vitis_accelerator_config import VitisAcceleratorConfig
 
 from hls4ml.backends.vitis.vitis_backend import VitisBackend  # isort: skip
 
