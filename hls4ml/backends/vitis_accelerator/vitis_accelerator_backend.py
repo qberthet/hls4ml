@@ -14,8 +14,8 @@ class VitisAcceleratorBackend(VivadoBackend):
 
     def _register_flows(self):
         validation_passes = [
-            'vitis:validate_conv_implementation',
-            'vitis:validate_strategy',
+            'vitisaccelerator:validate_conv_implementation',
+            'vitisaccelerator:validate_strategy',
         ]
         validation_flow = register_flow('validation', validation_passes, requires=['vivado:init_layers'], backend=self.name)
 
@@ -24,7 +24,7 @@ class VitisAcceleratorBackend(VivadoBackend):
             'apply_templates', self._get_layer_templates, requires=['vivado:init_layers'], backend=self.name
         )
 
-        writer_passes = ['make_stamp', 'vitis:write_hls']
+        writer_passes = ['make_stamp', 'vitisaccelerator:write_hls']
         self._writer_flow = register_flow('write', writer_passes, requires=['vitis:ip'], backend=self.name)
 
         ip_flow_requirements = get_flow('vivado:ip').requires.copy()
