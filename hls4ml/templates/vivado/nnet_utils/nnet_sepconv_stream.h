@@ -23,7 +23,7 @@ void depthwise_product(data_T data[CONFIG_T::kernel_size * CONFIG_T::n_chan], re
 
     #pragma HLS ARRAY_PARTITION variable=mult complete
 
-    #pragma HLS ALLOCATION operation instances=mul limit=CONFIG_T::multiplier_limit
+    #pragma HLS ALLOCATION operation instances=mul limit=CONFIG_T::mult_config::multiplier_limit
 
 // Do the matrix-multiply
 Product:
