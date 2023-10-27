@@ -2,7 +2,6 @@ import glob
 import os
 from shutil import copy
 
-from hls4ml.writer.vivado_writer import VivadoWriter
 from hls4ml.writer.vitis_writer import VitisWriter
 
 
@@ -34,36 +33,6 @@ class VitisAcceleratorWriter(VitisWriter):
                         if w.storage.lower() != 'bram':
                             newline += f'#include "weights/{w.name}.h"\n'
 
-<<<<<<< HEAD
-=======
-        for h in headers:
-            copy(srcpath + h, dstpath + h)
-
-    def write_parameters_overrides(self, model):
-        """Write the C++ layer config file (parameters.h)
-
-        Args:
-            model (ModelGraph): the hls4ml model.
-        """
-        filedir = os.path.dirname(os.path.abspath(__file__))
-        f = open(os.path.join(filedir, '../templates/vivado/firmware/parameters.h'))
-        fout = open(f'{model.config.get_output_dir()}/firmware/parameters.h', 'w')
-
-        for line in f.readlines():
-            if '// hls-fpga-machine-learning insert includes' in line:
-                newline = line
-                for include in sorted(set(sum((layer.get_attr('include_header', []) for layer in model.get_layers()), []))):
-                    newline += '#include "%s"\n' % include
-                newline += '#include "defines.h"'
-
-            elif '// hls-fpga-machine-learning insert weights' in line:
-                newline = line
-                for layer in model.get_layers():
-                    for w in layer.get_weights():
-                        if w.storage.lower() != 'bram':
-                            newline += f'#include "weights/{w.name}.h"\n'
-
->>>>>>> 00f13f87 (Override write parameters to include "defines.h")
             elif "// hls-fpga-machine-learning insert layer-config" in line:
                 newline = line
                 for layer in model.get_layers():
@@ -124,6 +93,10 @@ class VitisAcceleratorWriter(VitisWriter):
         f = open(os.path.join(filedir, '../templates/vitis_accelerator/myproject_kernel.cpp'))
         fout = open(f'{model.config.get_output_dir()}/{model.config.get_project_name()}_kernel.cpp', 'w')
 
+
+        model_inputs = model.get_input_variables()
+        model_outputs = model.get_output_variables()
+
         indent = '    '
 
         for line in f.readlines():
@@ -131,6 +104,25 @@ class VitisAcceleratorWriter(VitisWriter):
                 newline = line.replace('MYPROJECT', format(model.config.get_project_name().upper()))
             elif 'myproject' in line:
                 newline = line.replace('myproject', format(model.config.get_project_name()))
+            elif '// hls-fpga-machine-learning insert header' in line:
+                inputs_str = ', '.join([f'input_t *{i.name}' for i in model_inputs])
+                outputs_str = ', '.join([f'result_t *{o.name}' for o in model_outputs])
+
+                newline = ''
+                newline += indent + inputs_str + ',\n'
+                newline += indent + outputs_str + ',\n'
+                newline += '    uint32_t size\n'
+            elif '// hls-fpga-machine-learning insert project top' in line:
+                top_function_str = format(model.config.get_project_name())
+                input_str = str(model_inputs[-1].name)
+                output_str = str(model_outputs[-1].name)
+                newline = indent + top_function_str + '(' + input_str + '_stream, ' + output_str + '_stream);\n'
+            elif 'project_input' in line:
+                #input = [i.name for i in model_inputs]
+                newline = line.replace('project_input', str(model_inputs[-1].name))
+            elif 'project_output' in line:
+                #output = [o.name for o in model_outputs]
+                newline = line.replace('project_output', str(model_outputs[-1].name))
             else:
                 newline = line
             fout.write(newline)
@@ -158,11 +150,8 @@ class VitisAcceleratorWriter(VitisWriter):
                 newline = line.replace('myproject', format(model.config.get_project_name()))
             elif 'myproject_kernel' in line:
                 newline = line.replace('myproject_kernel', format(model.config.get_project_name(), '_kernel'))
-<<<<<<< HEAD
             elif 'output_dir' in line:
                 newline = line.replace('output_dir', format(model.config.get_output_dir()))
-=======
->>>>>>> 8e47ad72 (Adding templ: cfg, makefile, host, kernel, writer)
             else:
                 newline = line
             fout.write(newline)
@@ -176,10 +165,16 @@ class VitisAcceleratorWriter(VitisWriter):
         Args:
             model (ModelGraph): the hls4ml model.
         """
+        from hls4ml.backends import VitisAcceleratorConfig
+
+#        vivado_accelerator_config = VitisAcceleratorConfig(
+#            model.config, model.get_input_variables(), model.get_output_variables()
+#        )
+        vitis_accelerator_config = VitisAcceleratorConfig(model.config)
 
         filedir = os.path.dirname(os.path.abspath(__file__))
         f = open(os.path.join(filedir, '../templates/vitis_accelerator/Makefile'))
-        fout = open(f'./Makefile', 'w')
+        fout = open(f'{model.config.get_output_dir()}/Makefile', 'w')
 
         indent = '    '
 
@@ -188,8 +183,12 @@ class VitisAcceleratorWriter(VitisWriter):
                 newline = line.replace('MYPROJECT', format(model.config.get_project_name().upper()))
             elif 'myproject' in line:
                 newline = line.replace('myproject', format(model.config.get_project_name()))
+            elif 'myproject_host' in line:
+                newline = line.replace('myproject_host', format(model.config.get_project_name(), '_host'))
             elif 'myproject_kernel' in line:
                 newline = line.replace('myproject_kernel', format(model.config.get_project_name(), '_kernel'))
+            elif 'myplatform' in line:
+                newline = line.replace('myplatform', format(vitis_accelerator_config.get_platform()))
             else:
                 newline = line
             fout.write(newline)
@@ -208,6 +207,13 @@ class VitisAcceleratorWriter(VitisWriter):
         f = open(os.path.join(filedir, '../templates/vitis_accelerator/accelerator_card.cfg'))
         fout = open(f'{model.config.get_output_dir()}/accelerator_card.cfg', 'w')
 
+        from hls4ml.backends import VitisAcceleratorConfig
+
+#        vitis_accelerator_config = VitisAcceleratorConfig(
+#            model.config, model.get_input_variables(), model.get_output_variables()
+#        )
+        vitis_accelerator_config = VitisAcceleratorConfig(model.config)
+
         indent = '    '
 
         for line in f.readlines():
@@ -217,12 +223,25 @@ class VitisAcceleratorWriter(VitisWriter):
                 newline = line.replace('myproject', format(model.config.get_project_name()))
             elif 'myproject_kernel' in line:
                 newline = line.replace('myproject_kernel', format(model.config.get_project_name(), '_kernel'))
+            elif 'myplatform' in line:
+                newline = line.replace('myplatform', format(vitis_accelerator_config.get_platform()))
             else:
                 newline = line
             fout.write(newline)
 
         f.close()
         fout.close()
+    def write_nnet_utils_overrides(self, model):
+        """Override nnet_types.h pointer comparison
+
+        Args:
+            model (ModelGraph): the hls4ml model.
+        """
+
+        filedir = os.path.dirname(os.path.abspath(__file__))
+        srcpath = os.path.join(filedir, '../templates/vitis_accelerator/nnet_utils/')
+        dstpath = f'{model.config.get_output_dir()}/firmware/nnet_utils/'
+        copy(srcpath + "nnet_types.h", dstpath + "nnet_types.h")
     
     def write_hls(self, model):
         """
@@ -230,7 +249,7 @@ class VitisAcceleratorWriter(VitisWriter):
         """
         print("[K] Vitis_accelerator_writer -> write_hls called\n\n\n\n")
         super().write_hls(model)
-        super().write_nnet_utils_overrides(model)
+        self.write_nnet_utils_overrides(model)
         self.write_build_script_backend_override(model)
         self.write_parameters_overrides(model)
         self.write_kernel(model)
