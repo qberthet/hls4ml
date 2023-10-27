@@ -34,6 +34,36 @@ class VitisAcceleratorWriter(VitisWriter):
                         if w.storage.lower() != 'bram':
                             newline += f'#include "weights/{w.name}.h"\n'
 
+<<<<<<< HEAD
+=======
+        for h in headers:
+            copy(srcpath + h, dstpath + h)
+
+    def write_parameters_overrides(self, model):
+        """Write the C++ layer config file (parameters.h)
+
+        Args:
+            model (ModelGraph): the hls4ml model.
+        """
+        filedir = os.path.dirname(os.path.abspath(__file__))
+        f = open(os.path.join(filedir, '../templates/vivado/firmware/parameters.h'))
+        fout = open(f'{model.config.get_output_dir()}/firmware/parameters.h', 'w')
+
+        for line in f.readlines():
+            if '// hls-fpga-machine-learning insert includes' in line:
+                newline = line
+                for include in sorted(set(sum((layer.get_attr('include_header', []) for layer in model.get_layers()), []))):
+                    newline += '#include "%s"\n' % include
+                newline += '#include "defines.h"'
+
+            elif '// hls-fpga-machine-learning insert weights' in line:
+                newline = line
+                for layer in model.get_layers():
+                    for w in layer.get_weights():
+                        if w.storage.lower() != 'bram':
+                            newline += f'#include "weights/{w.name}.h"\n'
+
+>>>>>>> 00f13f87 (Override write parameters to include "defines.h")
             elif "// hls-fpga-machine-learning insert layer-config" in line:
                 newline = line
                 for layer in model.get_layers():
