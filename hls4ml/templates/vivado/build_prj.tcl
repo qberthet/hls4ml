@@ -171,6 +171,7 @@ if {[string equal "$backend" "vitisaccelerator"]} {
     } else {
         open_solution "solution1"
     }
+}
 catch {config_array_partition -maximum_size 4096}
 config_compile -name_max_length 80
 set_part $part
