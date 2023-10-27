@@ -3,26 +3,12 @@ import os
 from shutil import copy
 
 from hls4ml.writer.vivado_writer import VivadoWriter
+from hls4ml.writer.vitis_writer import VitisWriter
 
 
-class VitisAcceleratorWriter(VivadoWriter):
+class VitisAcceleratorWriter(VitisWriter):
     def __init__(self):
         super().__init__()
-
-    def write_nnet_utils_overrides(self, model):
-        ###################
-        # nnet_utils
-        ###################
-
-        filedir = os.path.dirname(os.path.abspath(__file__))
-
-        srcpath = os.path.join(filedir, '../templates/vitis_accelerator/nnet_utils/')
-        dstpath = f'{model.config.get_output_dir()}/firmware/nnet_utils/'
-
-        headers = [os.path.basename(h) for h in glob.glob(srcpath + '*.h')]
-
-        for h in headers:
-            copy(srcpath + h, dstpath + h)
 
     def write_parameters_overrides(self, model):
         """Write the C++ layer config file (parameters.h)
@@ -209,7 +195,7 @@ class VitisAcceleratorWriter(VivadoWriter):
         """
         print("[K] Vitis_accelerator_writer -> write_hls called\n\n\n\n")
         super().write_hls(model)
-        self.write_nnet_utils_overrides(model)
+        super().write_nnet_utils_overrides(model)
         self.write_build_script_backend_override(model)
         self.write_parameters_overrides(model)
         self.write_kernel(model)
