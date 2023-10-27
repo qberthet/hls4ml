@@ -23,6 +23,43 @@ class VitisAcceleratorWriter(VivadoWriter):
 
         for h in headers:
             copy(srcpath + h, dstpath + h)
+
+    def write_parameters_overrides(self, model):
+        """Write the C++ layer config file (parameters.h)
+
+        Args:
+            model (ModelGraph): the hls4ml model.
+        """
+        filedir = os.path.dirname(os.path.abspath(__file__))
+        f = open(os.path.join(filedir, '../templates/vivado/firmware/parameters.h'))
+        fout = open(f'{model.config.get_output_dir()}/firmware/parameters.h', 'w')
+
+        for line in f.readlines():
+            if '// hls-fpga-machine-learning insert includes' in line:
+                newline = line
+                for include in sorted(set(sum((layer.get_attr('include_header', []) for layer in model.get_layers()), []))):
+                    newline += '#include "%s"\n' % include
+                newline += '#include "defines.h"'
+
+            elif '// hls-fpga-machine-learning insert weights' in line:
+                newline = line
+                for layer in model.get_layers():
+                    for w in layer.get_weights():
+                        if w.storage.lower() != 'bram':
+                            newline += f'#include "weights/{w.name}.h"\n'
+
+            elif "// hls-fpga-machine-learning insert layer-config" in line:
+                newline = line
+                for layer in model.get_layers():
+                    config = layer.get_attr('config_cpp', None)
+                    if config:
+                        newline += '// ' + layer.name + '\n'
+                        newline += config + '\n'
+            else:
+                newline = line
+            fout.write(newline)
+        f.close()
+        fout.close()
     
     def write_build_script_backend_override(self, model):
 #        try:
@@ -174,6 +211,7 @@ class VitisAcceleratorWriter(VivadoWriter):
         super().write_hls(model)
         self.write_nnet_utils_overrides(model)
         self.write_build_script_backend_override(model)
+        self.write_parameters_overrides(model)
         self.write_kernel(model)
         self.write_host(model)
         self.write_makefile(model)
