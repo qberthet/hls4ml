@@ -59,8 +59,113 @@ class VitisAcceleratorWriter(VivadoWriter):
         f.write('variable clock_uncertainty\n')
         f.write('set clock_uncertainty {}\n'.format(model.config.get_config_value('ClockUncertainty', '12.5%')))
         f.close()
-    
 
+    def write_kernel(self, model):
+        """Write the Python-C++ kernel (myproject_kernel.cpp)
+
+        Args:
+            model (ModelGraph): the hls4ml model.
+        """
+
+        filedir = os.path.dirname(os.path.abspath(__file__))
+        f = open(os.path.join(filedir, '../templates/vitis_accelerator/myproject_kernel.cpp'))
+        fout = open(f'{model.config.get_output_dir()}/{model.config.get_project_name()}_kernel.cpp', 'w')
+
+        indent = '    '
+
+        for line in f.readlines():
+            if 'MYPROJECT' in line:
+                newline = line.replace('MYPROJECT', format(model.config.get_project_name().upper()))
+            elif 'myproject' in line:
+                newline = line.replace('myproject', format(model.config.get_project_name()))
+            else:
+                newline = line
+            fout.write(newline)
+
+        f.close()
+        fout.close()
+
+    def write_host(self, model):
+        """Write the Python-C++ kernel (myproject_host.cpp)
+
+        Args:
+            model (ModelGraph): the hls4ml model.
+        """
+
+        filedir = os.path.dirname(os.path.abspath(__file__))
+        f = open(os.path.join(filedir, '../templates/vitis_accelerator/myproject_host.cpp'))
+        fout = open(f'{model.config.get_output_dir()}/{model.config.get_project_name()}_host.cpp', 'w')
+
+        indent = '    '
+
+        for line in f.readlines():
+            if 'MYPROJECT' in line:
+                newline = line.replace('MYPROJECT', format(model.config.get_project_name().upper()))
+            elif 'myproject' in line:
+                newline = line.replace('myproject', format(model.config.get_project_name()))
+            elif 'myproject_kernel' in line:
+                newline = line.replace('myproject_kernel', format(model.config.get_project_name(), '_kernel'))
+            else:
+                newline = line
+            fout.write(newline)
+
+        f.close()
+        fout.close()
+
+    def write_makefile(self, model):
+        """Write the Python-C++ Makefile (Makefile)
+
+        Args:
+            model (ModelGraph): the hls4ml model.
+        """
+
+        filedir = os.path.dirname(os.path.abspath(__file__))
+        f = open(os.path.join(filedir, '../templates/vitis_accelerator/Makefile'))
+        fout = open(f'./Makefile', 'w')
+
+        indent = '    '
+
+        for line in f.readlines():
+            if 'MYPROJECT' in line:
+                newline = line.replace('MYPROJECT', format(model.config.get_project_name().upper()))
+            elif 'myproject' in line:
+                newline = line.replace('myproject', format(model.config.get_project_name()))
+            elif 'myproject_kernel' in line:
+                newline = line.replace('myproject_kernel', format(model.config.get_project_name(), '_kernel'))
+            else:
+                newline = line
+            fout.write(newline)
+
+        f.close()
+        fout.close()
+
+    def write_accelerator_card_cfg(self, model):
+        """Write the Python acceleratro card configuration (accelerator_card.cfg)
+
+        Args:
+            model (ModelGraph): the hls4ml model.
+        """
+
+        filedir = os.path.dirname(os.path.abspath(__file__))
+        f = open(os.path.join(filedir, '../templates/vitis_accelerator/accelerator_card.cfg'))
+        fout = open(f'{model.config.get_output_dir()}/accelerator_card.cfg', 'w')
+
+        indent = '    '
+
+        for line in f.readlines():
+            if 'MYPROJECT' in line:
+                newline = line.replace('MYPROJECT', format(model.config.get_project_name().upper()))
+            elif 'myproject' in line:
+                newline = line.replace('myproject', format(model.config.get_project_name()))
+            elif 'myproject_kernel' in line:
+                newline = line.replace('myproject_kernel', format(model.config.get_project_name(), '_kernel'))
+            else:
+                newline = line
+            fout.write(newline)
+
+        f.close()
+        fout.close()
+    
     def write_hls(self, model):
         """
         Write the HLS project. Calls the steps from VivadoWriter, adapted for Vitis
@@ -69,3 +174,7 @@ class VitisAcceleratorWriter(VivadoWriter):
         super().write_hls(model)
         self.write_nnet_utils_overrides(model)
         self.write_build_script_backend_override(model)
+        self.write_kernel(model)
+        self.write_host(model)
+        self.write_makefile(model)
+        self.write_accelerator_card_cfg(model)
