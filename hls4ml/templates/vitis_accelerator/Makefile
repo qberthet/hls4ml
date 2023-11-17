@@ -7,11 +7,9 @@ build:
 	python3 tuto_vitis_stream.py
 
 app.exe: ./prj_tuto_vitis_stream/PrjTutoVitisStream_host.cpp
-#	g++ -Wall -g -std=c++11 ./prj_tuto_vitis_stream/PrjTutoVitisStream_host.cpp ./prj_tuto_vitis_stream/event_timer.cpp ./prj_tuto_vitis_stream/xilinx_ocl_helper.cpp -o app.exe 
-#	g++ -Wall -g -std=c++11 ./prj_tuto_vitis_stream/PrjTutoVitisStream_host.cpp ./prj_tuto_vitis_stream/PrjTutoVitisStream_bridge.cpp ./common/includes/xcl2/xcl2.cpp -o app.exe
 	g++ -Wall -g -std=c++11 ./prj_tuto_vitis_stream/PrjTutoVitisStream_host.cpp -o app.exe \
 		-I ./prj_tuto_vitis_stream/firmware/ap_types -I/opt/xilinx/xrt/include \
-		-L${XILINX_XRT}/lib/ -lOpenCL -pthread -lrt -lstdc++
+		-L${XILINX_XRT}/lib/ -lxrt_coreutil -lOpenCL -pthread -lrt -lstdc++
 
 PrjTutoVitisStream_kernel.xo: ./prj_tuto_vitis_stream/PrjTutoVitisStream_kernel.cpp
 #	v++ -c -t hw --platform  xilinx_vck5000_gen4x8_qdma_2_202220_1 --config ./prj_tuto_vitis_stream/accelerator_card.cfg -k PrjTutoVitisStream_kernel -I ./prj_tuto_vitis_stream ./prj_tuto_vitis_stream/PrjTutoVitisStream_kernel.cpp -I./prj_tuto_vitis_stream/firmware/ap_types/ -I./prj_tuto_vitis_stream/firmware/nnet_utils -I ./prj_tuto_vitis_stream/firmware/weights  -o PrjTutoVitisStream_kernel.xo
