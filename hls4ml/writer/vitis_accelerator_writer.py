@@ -128,6 +128,8 @@ class VitisAcceleratorWriter(VitisWriter):
                 newline = line.replace('myproject', format(model.config.get_project_name()))
             elif 'myproject_kernel' in line:
                 newline = line.replace('myproject_kernel', format(model.config.get_project_name(), '_kernel'))
+            elif 'output_dir' in line:
+                newline = line.replace('output_dir', format(model.config.get_output_dir()))
             else:
                 newline = line
             fout.write(newline)
