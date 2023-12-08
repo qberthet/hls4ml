@@ -146,7 +146,7 @@ class VitisAcceleratorWriter(VitisWriter):
 
         filedir = os.path.dirname(os.path.abspath(__file__))
         f = open(os.path.join(filedir, '../templates/vitis_accelerator/Makefile'))
-        fout = open(f'./Makefile', 'w')
+        fout = open(f'{model.config.get_output_dir()}/Makefile', 'w')
 
         indent = '    '
 
@@ -155,6 +155,8 @@ class VitisAcceleratorWriter(VitisWriter):
                 newline = line.replace('MYPROJECT', format(model.config.get_project_name().upper()))
             elif 'myproject' in line:
                 newline = line.replace('myproject', format(model.config.get_project_name()))
+            elif 'myproject_host' in line:
+                newline = line.replace('myproject_host', format(model.config.get_project_name(), '_host'))
             elif 'myproject_kernel' in line:
                 newline = line.replace('myproject_kernel', format(model.config.get_project_name(), '_kernel'))
             else:
