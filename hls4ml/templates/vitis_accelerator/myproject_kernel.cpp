@@ -24,16 +24,14 @@ mem_wr:
 }
 
 void myproject_kernel(
-    input_t *input_1,
-    result_t *layer9_out,
-    uint32_t size
+// hls-fpga-machine-learning insert header
 ){
-    #pragma HLS INTERFACE m_axi port = input_1 bundle = gmem0
-    #pragma HLS INTERFACE m_axi port = layer9_out bundle = gmem1
-    static hls::stream<input_t> input_1_stream("input_1_stream");
-    static hls::stream<result_t> layer9_out_stream("layer9_out_stream");
+    #pragma HLS INTERFACE m_axi port = project_input bundle = gmem0
+    #pragma HLS INTERFACE m_axi port = project_output bundle = gmem1
+    static hls::stream<input_t> project_input_stream("project_input_stream");
+    static hls::stream<result_t> project_output_stream("project_output_stream");
     #pragma HLS dataflow
-    load_input(input_1, input_1_stream, size);
-    myproject(input_1_stream, layer9_out_stream);
-    store_result(layer9_out, layer9_out_stream, size);
+    load_input(project_input, project_input_stream, size);
+    // hls-fpga-machine-learning insert project top
+    store_result(project_output, project_output_stream, size);
 }
