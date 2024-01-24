@@ -94,6 +94,10 @@ class VitisAcceleratorWriter(VitisWriter):
         f = open(os.path.join(filedir, '../templates/vitis_accelerator/myproject_kernel.cpp'))
         fout = open(f'{model.config.get_output_dir()}/{model.config.get_project_name()}_kernel.cpp', 'w')
 
+
+        model_inputs = model.get_input_variables()
+        model_outputs = model.get_output_variables()
+
         indent = '    '
 
         for line in f.readlines():
@@ -101,6 +105,25 @@ class VitisAcceleratorWriter(VitisWriter):
                 newline = line.replace('MYPROJECT', format(model.config.get_project_name().upper()))
             elif 'myproject' in line:
                 newline = line.replace('myproject', format(model.config.get_project_name()))
+            elif '// hls-fpga-machine-learning insert header' in line:
+                inputs_str = ', '.join([f'input_t *{i.name}' for i in model_inputs])
+                outputs_str = ', '.join([f'result_t *{o.name}' for o in model_outputs])
+
+                newline = ''
+                newline += indent + inputs_str + ',\n'
+                newline += indent + outputs_str + ',\n'
+                newline += '    uint32_t size\n'
+            elif '// hls-fpga-machine-learning insert project top' in line:
+                top_function_str = format(model.config.get_project_name())
+                input_str = str(model_inputs[-1].name)
+                output_str = str(model_outputs[-1].name)
+                newline = indent + top_function_str + '(' + input_str + '_stream, ' + output_str + '_stream);\n'
+            elif 'project_input' in line:
+                #input = [i.name for i in model_inputs]
+                newline = line.replace('project_input', str(model_inputs[-1].name))
+            elif 'project_output' in line:
+                #output = [o.name for o in model_outputs]
+                newline = line.replace('project_output', str(model_outputs[-1].name))
             else:
                 newline = line
             fout.write(newline)
