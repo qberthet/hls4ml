@@ -2,7 +2,6 @@ import glob
 import os
 from shutil import copy
 
-from hls4ml.writer.vivado_writer import VivadoWriter
 from hls4ml.writer.vitis_writer import VitisWriter
 
 
@@ -200,6 +199,12 @@ class VitisAcceleratorWriter(VitisWriter):
         f = open(os.path.join(filedir, '../templates/vitis_accelerator/accelerator_card.cfg'))
         fout = open(f'{model.config.get_output_dir()}/accelerator_card.cfg', 'w')
 
+        from hls4ml.backends import VivadoAcceleratorConfig
+
+        vivado_accelerator_config = VivadoAcceleratorConfig(
+            model.config, model.get_input_variables(), model.get_output_variables()
+        )
+
         indent = '    '
 
         for line in f.readlines():
@@ -209,6 +214,8 @@ class VitisAcceleratorWriter(VitisWriter):
                 newline = line.replace('myproject', format(model.config.get_project_name()))
             elif 'myproject_kernel' in line:
                 newline = line.replace('myproject_kernel', format(model.config.get_project_name(), '_kernel'))
+            elif 'myplatform' in line:
+                newline = line.replace('myplatform', format(vivado_accelerator_config.get_platform()))
             else:
                 newline = line
             fout.write(newline)
