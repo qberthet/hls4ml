@@ -1,12 +1,13 @@
 import os
 import sys
 
+from hls4ml.backends import VitisBackend
 from hls4ml.backends import VivadoBackend
 from hls4ml.model.flow import get_flow, register_flow
 from hls4ml.report import parse_vivado_report
 
 
-class VitisAcceleratorBackend(VivadoBackend):
+class VitisAcceleratorBackend(VitisBackend):
     def __init__(self):
         super(VivadoBackend, self).__init__(name='VitisAccelerator')
         self._register_layer_attributes()
@@ -32,21 +33,3 @@ class VitisAcceleratorBackend(VivadoBackend):
         ip_flow_requirements.insert(ip_flow_requirements.index('vivado:apply_templates'), template_flow)
 
         self._default_flow = register_flow('ip', None, requires=ip_flow_requirements, backend=self.name)
-
-    def build(self, model, reset=False, csim=True, synth=True, cosim=False, validation=False, export=False, vsynth=False):
-        if 'linux' in sys.platform:
-            found = os.system('command -v vitis_hls > /dev/null')
-            if found != 0:
-                raise Exception('Vitis HLS installation not found. Make sure "vitis_hls" is on PATH.')
-
-        curr_dir = os.getcwd()
-        os.chdir(model.config.get_output_dir())
-        os.system(
-            (
-                'vitis_hls -f build_prj.tcl "reset={reset} csim={csim} synth={synth} cosim={cosim} '
-                'validation={validation} export={export} vsynth={vsynth}"'
-            ).format(reset=reset, csim=csim, synth=synth, cosim=cosim, validation=validation, export=export, vsynth=vsynth)
-        )
-        os.chdir(curr_dir)
-
-        return parse_vivado_report(model.config.get_output_dir())
