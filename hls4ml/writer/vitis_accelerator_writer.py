@@ -199,9 +199,9 @@ class VitisAcceleratorWriter(VitisWriter):
         f = open(os.path.join(filedir, '../templates/vitis_accelerator/accelerator_card.cfg'))
         fout = open(f'{model.config.get_output_dir()}/accelerator_card.cfg', 'w')
 
-        from hls4ml.backends import VivadoAcceleratorConfig
+        from hls4ml.backends import VitisAcceleratorConfig
 
-        vivado_accelerator_config = VivadoAcceleratorConfig(
+        vivado_accelerator_config = VitisAcceleratorConfig(
             model.config, model.get_input_variables(), model.get_output_variables()
         )
 

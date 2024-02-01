@@ -10,7 +10,7 @@ from hls4ml.backends.vitis.vitis_backend import VitisBackend  # isort: skip
 
 #[K] start
 from hls4ml.backends.vitis_accelerator.vitis_accelerator_backend import VitisAcceleratorBackend
-#from hls4ml.backends.vitis_accelerator.vitis_accelerator_config import VitisAcceleratorConfig
+from hls4ml.backends.vitis_accelerator.vitis_accelerator_config import VitisAcceleratorConfig
 #[K] end
 
 register_backend('Vivado', VivadoBackend)
