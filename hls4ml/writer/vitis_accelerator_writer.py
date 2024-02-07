@@ -165,6 +165,11 @@ class VitisAcceleratorWriter(VitisWriter):
         Args:
             model (ModelGraph): the hls4ml model.
         """
+        from hls4ml.backends import VitisAcceleratorConfig
+
+        vivado_accelerator_config = VitisAcceleratorConfig(
+            model.config, model.get_input_variables(), model.get_output_variables()
+        )
 
         filedir = os.path.dirname(os.path.abspath(__file__))
         f = open(os.path.join(filedir, '../templates/vitis_accelerator/Makefile'))
@@ -181,6 +186,8 @@ class VitisAcceleratorWriter(VitisWriter):
                 newline = line.replace('myproject_host', format(model.config.get_project_name(), '_host'))
             elif 'myproject_kernel' in line:
                 newline = line.replace('myproject_kernel', format(model.config.get_project_name(), '_kernel'))
+            elif 'myplatform' in line:
+                newline = line.replace('myplatform', format(vivado_accelerator_config.get_platform()))
             else:
                 newline = line
             fout.write(newline)

@@ -1,5 +1,8 @@
 .PHONY: clean
 
+myplatform
+PLATFORM=myplatform
+
 app.exe: ./myproject_host.cpp
 	g++ -Wall -g -std=c++11 ./myproject_host.cpp -o app.exe \
 		-I firmware/ap_types -I/opt/xilinx/xrt/include \
@@ -8,11 +11,16 @@ app.exe: ./myproject_host.cpp
 myproject_kernel.xo: myproject_kernel.cpp
 	v++ --target hw --compile -I"./" --config accelerator_card.cfg -o"build/myproject_kernel.xo" "myproject_kernel.cpp"
 
+ifneq (,$(findstring vck5000,$(PLATFORM)))
 myproject_kernel.xsa: ./build/myproject_kernel.xo
 	v++ -l -t hw --config ./accelerator_card.cfg ./build/myproject_kernel.xo -o myproject_kernel.xsa
 
 myproject_kernel.xclbin: ./myproject_kernel.xsa
 	v++ --package -t hw --config ./accelerator_card.cfg ./myproject_kernel.xsa -o myproject_kernel.xclbin
+else
+myproject_kernel.xclbin: ./myproject_kernel.xo
+	v++ -l -t hw --config ./accelerator_card.cfg ./myproject_kernel.o -o myproject_kernel.xclbin
+endif
 
 emconfig.json:
 	emconfigutil --platform  xilinx_vck5000_gen4x8_qdma_2_202220_1 --nd 1
