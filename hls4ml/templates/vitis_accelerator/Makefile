@@ -1,6 +1,5 @@
 .PHONY: clean
 
-myplatform
 PLATFORM=myplatform
 
 app.exe: ./myproject_host.cpp
