@@ -18,7 +18,7 @@ myproject_kernel.xclbin: ./myproject_kernel.xsa
 	v++ --package -t hw --config ./accelerator_card.cfg ./myproject_kernel.xsa -o myproject_kernel.xclbin
 else
 myproject_kernel.xclbin: ./myproject_kernel.xo
-	v++ -l -t hw --config ./accelerator_card.cfg ./myproject_kernel.o -o myproject_kernel.xclbin
+	v++ -l -t hw --config ./accelerator_card.cfg ./build/myproject_kernel.xo -o myproject_kernel.xclbin
 endif
 
 emconfig.json:
