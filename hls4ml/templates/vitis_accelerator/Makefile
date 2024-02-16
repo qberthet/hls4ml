@@ -3,7 +3,7 @@
 PLATFORM=myplatform
 
 app.exe: ./myproject_host.cpp
-	g++ -Wall -g -std=c++11 ./myproject_host.cpp -o app.exe \
+	g++ -g -std=c++14 ./myproject_host.cpp -o app.exe \
 		-I firmware/ap_types -I/opt/xilinx/xrt/include \
 		-L${XILINX_XRT}/lib/ -lxrt_coreutil -lOpenCL -pthread -lrt -lstdc++
 
