@@ -4,7 +4,7 @@
 #include "firmware/parameters.h"
 #include "firmware/myproject.cpp"
 
-#define c_size 1024
+constexpr int c_size = 1024;
 
 static void load_input(input_t* in, hls::stream<input_t>& inStream, int size) {
 mem_rd:
