@@ -231,6 +231,17 @@ class VitisAcceleratorWriter(VitisWriter):
 
         f.close()
         fout.close()
+    def write_nnet_utils_overrides(self, model):
+        """Override nnet_types.h pointer comparison
+
+        Args:
+            model (ModelGraph): the hls4ml model.
+        """
+
+        filedir = os.path.dirname(os.path.abspath(__file__))
+        srcpath = os.path.join(filedir, '../templates/vitis_accelerator/nnet_utils/')
+        dstpath = f'{model.config.get_output_dir()}/firmware/nnet_utils/'
+        copy(srcpath + "nnet_types.h", dstpath + "nnet_types.h")
     
     def write_hls(self, model):
         """
@@ -238,7 +249,7 @@ class VitisAcceleratorWriter(VitisWriter):
         """
         print("[K] Vitis_accelerator_writer -> write_hls called\n\n\n\n")
         super().write_hls(model)
-        super().write_nnet_utils_overrides(model)
+        self.write_nnet_utils_overrides(model)
         self.write_build_script_backend_override(model)
         self.write_parameters_overrides(model)
         self.write_kernel(model)
