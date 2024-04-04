@@ -50,7 +50,7 @@ size_t trace_type_size = sizeof(double);
 
 #define DATA_SIZE 1
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
 
     // Read settings
     std::string binaryFile = argv[1];
@@ -76,13 +76,13 @@ int main(int argc, char** argv) {
     auto bo_out = xrt::bo(device, vector_size_bytes_out, krnl.group_id(1));
 
     // Map the contents of the buffer object into host memory
-    auto bo0_map = bo0.map<input_t*>();
-    auto bo0_out_map = bo_out.map<result_t*>();
-    memset((char*)bo0_map, 0, vector_size_bytes_in);
-    memset((char*)bo0_out_map, 0 ,vector_size_bytes_out);
+    auto bo0_map = bo0.map<input_t *>();
+    auto bo0_out_map = bo_out.map<result_t *>();
+    memset((char *)bo0_map, 0, vector_size_bytes_in);
+    memset((char *)bo0_out_map, 0, vector_size_bytes_out);
 
     // Create the test data
-/////////////////////////// From HLS4ML test start ///////////////////////////
+    /////////////////////////// From HLS4ML test start ///////////////////////////
 
     // load input data from text file
     std::ifstream fin("output_dir/tb_data/tb_input_features.dat");
@@ -124,53 +124,52 @@ int main(int argc, char** argv) {
             }
 
             // hls-fpga-machine-learning insert top-level-function
-//////////////////// Run on HW start ////////////////////
+            //////////////////// Run on HW start ////////////////////
             // Synchronize buffer content with device side
             std::cout << "synchronize input buffer data to device global memory\n";
-        
+
             bo0.sync(XCL_BO_SYNC_BO_TO_DEVICE);
-        //    bo1.sync(XCL_BO_SYNC_BO_TO_DEVICE);
-        
+            //    bo1.sync(XCL_BO_SYNC_BO_TO_DEVICE);
+
             std::cout << "Execution of the kernel\n";
-            //auto run = krnl(bo0, bo1, bo_out, DATA_SIZE);
+            // auto run = krnl(bo0, bo1, bo_out, DATA_SIZE);
             auto run = krnl(bo0, bo_out, DATA_SIZE);
             run.wait();
-        
+
             // Get the output;
             std::cout << "Get the output data from the device" << std::endl;
             bo_out.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
-        
-            // Print contents of bo0_map 
+
+            // Print contents of bo0_map
             std::cout << "Contents of bo0_map (Input):" << std::endl;
             for (int i = 0; i < DATA_SIZE; ++i) {
-                for(size_t j = 0; j < N_INPUT_1_1; j++){
+                for (size_t j = 0; j < N_INPUT_1_1; j++) {
                     std::cout << bo0_map[i][j] << " ";
                 }
             }
             std::cout << std::endl;
-        
+
             std::cout << "Contents of bo0_out_map (Output):" << std::endl;
             for (int i = 0; i < DATA_SIZE; ++i) {
-                for(size_t j = 0; j < N_LAYER_8; j++){
+                for (size_t j = 0; j < N_LAYER_8; j++) {
                     std::cout << bo0_out_map[i][j] << " ";
                 }
             }
             std::cout << std::endl;
-        
+
             std::cout << "TEST END\n";
             //////////////////// Run on HW end ////////////////////
 
             if (e % CHECKPOINT == 0) {
                 std::cout << "Predictions" << std::endl;
                 // hls-fpga-machine-learning insert predictions
-                for(int i = 0; i < N_LAYER_8; i++) {
-                  std::cout << pr[i] << " ";
+                for (int i = 0; i < N_LAYER_8; i++) {
+                    std::cout << pr[i] << " ";
                 }
                 std::cout << std::endl;
                 std::cout << "Quantized predictions" << std::endl;
             }
             e++;
-
         }
 
         delete bo0_map; // Don't forget to release memory if dynamically allocated
@@ -180,36 +179,35 @@ int main(int argc, char** argv) {
     } else {
         std::cout << "INFO: Unable to open input/predictions file, using default input." << std::endl;
 
-//////////////////// Run on HW start ////////////////////
-    bo0_map = {0};
+        //////////////////// Run on HW start ////////////////////
+        bo0_map = {0};
 
-    // Synchronize buffer content with device side
-    std::cout << "synchronize input buffer data to device global memory\n";
+        // Synchronize buffer content with device side
+        std::cout << "synchronize input buffer data to device global memory\n";
 
-    bo0.sync(XCL_BO_SYNC_BO_TO_DEVICE);
+        bo0.sync(XCL_BO_SYNC_BO_TO_DEVICE);
 
-    std::cout << "Execution of the kernel\n";
-    auto run = krnl(bo0, bo_out, DATA_SIZE);
-    run.wait();
+        std::cout << "Execution of the kernel\n";
+        auto run = krnl(bo0, bo_out, DATA_SIZE);
+        run.wait();
 
-    // Get the output;
-    std::cout << "Get the output data from the device" << std::endl;
-    bo_out.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
+        // Get the output;
+        std::cout << "Get the output data from the device" << std::endl;
+        bo_out.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
 
-
-    std::cout << "Contents of bo0_out_map (Output):" << std::endl;
-    for (int i = 0; i < DATA_SIZE; ++i) {
-        for(size_t j = 0; j < N_LAYER_8; j++){
-            std::cout << bo0_out_map[i][j] << " ";
+        std::cout << "Contents of bo0_out_map (Output):" << std::endl;
+        for (int i = 0; i < DATA_SIZE; ++i) {
+            for (size_t j = 0; j < N_LAYER_8; j++) {
+                std::cout << bo0_out_map[i][j] << " ";
+            }
         }
-    }
-    std::cout << std::endl;
+        std::cout << std::endl;
 
-    std::cout << "TEST END\n";
-//////////////////// Run on HW end ////////////////////
+        std::cout << "TEST END\n";
+        //////////////////// Run on HW end ////////////////////
     }
     fout.close();
     std::cout << "INFO: Saved inference results to file: " << RESULTS_LOG << std::endl;
-/////////////////////////// From HLS4ML test end ///////////////////////////
+    /////////////////////////// From HLS4ML test end ///////////////////////////
     return 0;
 }

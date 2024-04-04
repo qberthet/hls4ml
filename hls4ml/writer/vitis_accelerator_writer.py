@@ -1,4 +1,3 @@
-import glob
 import os
 from shutil import copy
 
@@ -45,29 +44,8 @@ class VitisAcceleratorWriter(VitisWriter):
             fout.write(newline)
         f.close()
         fout.close()
-    
-    def write_build_script_backend_override(self, model):
-#        try:
-#
-##            filedir = os.path.dirname(os.path.abspath(__file__))
-##            writerspath = os.path.join(filedir, '../writer')
-##            vitis_accelerator_writer_file = writerspath + "vitis_accelerator_writer.py"
-#            with open(model.config.get_output_dir() + '/project.tcl', 'r') as file:
-#                lines = file.readlines()
-#                print("[K]\n")
-#                print(lines)
-#
-#            with open(model.config.get_output_dir() + '/project.tcl', 'r', 'w') as file:
-#                print ('[K] overriding project.tcl')
-#                for line in lines:
-#                    if 'backend' in line:
-#                        index = line.find('backend')
-#                        line = line[:index] + 'backend ' + 'vitisaccelerator' + '\n'
-#                    file.write(line)
-#        
-#        except FileNotFoundError:
-#            print("File project.tcl not found.")
 
+    def write_build_script_backend_override(self, model):
         # project.tcl
         f = open(f'{model.config.get_output_dir()}/project.tcl', 'w')
         f.write('variable project_name\n')
@@ -93,7 +71,6 @@ class VitisAcceleratorWriter(VitisWriter):
         f = open(os.path.join(filedir, '../templates/vitis_accelerator/myproject_kernel.cpp'))
         fout = open(f'{model.config.get_output_dir()}/{model.config.get_project_name()}_kernel.cpp', 'w')
 
-
         model_inputs = model.get_input_variables()
         model_outputs = model.get_output_variables()
 
@@ -118,10 +95,10 @@ class VitisAcceleratorWriter(VitisWriter):
                 output_str = str(model_outputs[-1].name)
                 newline = indent + top_function_str + '(' + input_str + '_stream, ' + output_str + '_stream);\n'
             elif 'project_input' in line:
-                #input = [i.name for i in model_inputs]
+                # input = [i.name for i in model_inputs]
                 newline = line.replace('project_input', str(model_inputs[-1].name))
             elif 'project_output' in line:
-                #output = [o.name for o in model_outputs]
+                # output = [o.name for o in model_outputs]
                 newline = line.replace('project_output', str(model_outputs[-1].name))
             else:
                 newline = line
@@ -140,8 +117,6 @@ class VitisAcceleratorWriter(VitisWriter):
         filedir = os.path.dirname(os.path.abspath(__file__))
         f = open(os.path.join(filedir, '../templates/vitis_accelerator/myproject_host.cpp'))
         fout = open(f'{model.config.get_output_dir()}/{model.config.get_project_name()}_host.cpp', 'w')
-
-        indent = '    '
 
         for line in f.readlines():
             if 'MYPROJECT' in line:
@@ -167,16 +142,14 @@ class VitisAcceleratorWriter(VitisWriter):
         """
         from hls4ml.backends import VitisAcceleratorConfig
 
-#        vivado_accelerator_config = VitisAcceleratorConfig(
-#            model.config, model.get_input_variables(), model.get_output_variables()
-#        )
+        #        vivado_accelerator_config = VitisAcceleratorConfig(
+        #            model.config, model.get_input_variables(), model.get_output_variables()
+        #        )
         vitis_accelerator_config = VitisAcceleratorConfig(model.config)
 
         filedir = os.path.dirname(os.path.abspath(__file__))
         f = open(os.path.join(filedir, '../templates/vitis_accelerator/Makefile'))
         fout = open(f'{model.config.get_output_dir()}/Makefile', 'w')
-
-        indent = '    '
 
         for line in f.readlines():
             if 'MYPROJECT' in line:
@@ -209,12 +182,10 @@ class VitisAcceleratorWriter(VitisWriter):
 
         from hls4ml.backends import VitisAcceleratorConfig
 
-#        vitis_accelerator_config = VitisAcceleratorConfig(
-#            model.config, model.get_input_variables(), model.get_output_variables()
-#        )
+        #        vitis_accelerator_config = VitisAcceleratorConfig(
+        #            model.config, model.get_input_variables(), model.get_output_variables()
+        #        )
         vitis_accelerator_config = VitisAcceleratorConfig(model.config)
-
-        indent = '    '
 
         for line in f.readlines():
             if 'MYPROJECT' in line:
@@ -231,6 +202,7 @@ class VitisAcceleratorWriter(VitisWriter):
 
         f.close()
         fout.close()
+
     def write_nnet_utils_overrides(self, model):
         """Override nnet_types.h pointer comparison
 
@@ -242,7 +214,7 @@ class VitisAcceleratorWriter(VitisWriter):
         srcpath = os.path.join(filedir, '../templates/vitis_accelerator/nnet_utils/')
         dstpath = f'{model.config.get_output_dir()}/firmware/nnet_utils/'
         copy(srcpath + "nnet_types.h", dstpath + "nnet_types.h")
-    
+
     def write_hls(self, model):
         """
         Write the HLS project. Calls the steps from VivadoWriter, adapted for Vitis

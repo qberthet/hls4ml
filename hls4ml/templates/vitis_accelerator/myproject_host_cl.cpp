@@ -1,18 +1,18 @@
 /**
-* Copyright (C) 2019-2021 Xilinx, Inc
-*
-* Licensed under the Apache License, Version 2.0 (the "License"). You may
-* not use this file except in compliance with the License. A copy of the
-* License is located at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-* WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-* License for the specific language governing permissions and limitations
-* under the License.
-*/
+ * Copyright (C) 2019-2021 Xilinx, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"). You may
+ * not use this file except in compliance with the License. A copy of the
+ * License is located at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
 
 #include "xcl2.hpp" //host include
 
@@ -41,15 +41,14 @@ std::map<std::string, void *> *trace_outputs = NULL;
 size_t trace_type_size = sizeof(double);
 } // namespace nnet
 
-double get_time_diff( const struct timespec &start,
-                      const struct timespec &end ) {
+double get_time_diff(const struct timespec &start, const struct timespec &end) {
     double time_taken;
     time_taken = (end.tv_sec - start.tv_sec) * 1e9;
     time_taken = (time_taken + (end.tv_nsec - start.tv_nsec)) * 1e-9;
     return time_taken;
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
     if (argc != 2) {
         std::cout << "Usage: " << argv[0] << " <XCLBIN File>" << std::endl;
         return EXIT_FAILURE;
@@ -72,16 +71,16 @@ int main(int argc, char** argv) {
     // boundary. It will
     // ensure that user buffer is used when user create Buffer/Mem object with
     // CL_MEM_USE_HOST_PTR
-    std::vector<int, aligned_allocator<int> > source_in1(DATA_SIZE);
-//    std::vector<int, aligned_allocator<int> > source_in2(DATA_SIZE);
-    std::vector<int, aligned_allocator<int> > source_hw_results(DATA_SIZE);
-    std::vector<int, aligned_allocator<int> > source_sw_results(DATA_SIZE);
+    std::vector<int, aligned_allocator<int>> source_in1(DATA_SIZE);
+    //    std::vector<int, aligned_allocator<int> > source_in2(DATA_SIZE);
+    std::vector<int, aligned_allocator<int>> source_hw_results(DATA_SIZE);
+    std::vector<int, aligned_allocator<int>> source_sw_results(DATA_SIZE);
 
     // Create the test data
-    //std::generate(source_in1.begin(), source_in1.end(), std::rand);
-//    std::generate(source_in2.begin(), source_in2.end(), std::rand);
+    // std::generate(source_in1.begin(), source_in1.end(), std::rand);
+    //    std::generate(source_in2.begin(), source_in2.end(), std::rand);
     for (int i = 0; i < DATA_SIZE; i++) {
-//        source_sw_results[i] = source_in1[i] + source_in2[i];
+        //        source_sw_results[i] = source_in1[i] + source_in2[i];
         source_hw_results[i] = 0;
     }
 
@@ -114,9 +113,6 @@ int main(int argc, char** argv) {
         std::cout << "Failed to program any device found, exit!\n";
         exit(EXIT_FAILURE);
     }
-
-
-
 
     // [K] Code from hls4ml test
     // load input data from text file
@@ -155,105 +151,102 @@ int main(int argc, char** argv) {
                 current = strtok(NULL, " ");
             }
 
-             // hls-fpga-machine-learning insert data
-            //hls::stream<input_t> input_1("input_1");
-            //nnet::copy_data<float, input_t, 0, N_INPUT_1_1>(in, input_1);
-            //hls::stream<result_t> layer9_out("layer9_out");
-     
+            // hls-fpga-machine-learning insert data
+            // hls::stream<input_t> input_1("input_1");
+            // nnet::copy_data<float, input_t, 0, N_INPUT_1_1>(in, input_1);
+            // hls::stream<result_t> layer9_out("layer9_out");
+
             for (int i = 0; i < in.size(); i++) {
                 source_in1.push_back(in[i]);
             }
 
-/*
-//[K] replace function call with kernel exection
-            // hls-fpga-machine-learning insert top-level-function
-            myproject_kernel(input_1,layer9_out);
-*/
+            /*
+            //[K] replace function call with kernel exection
+                        // hls-fpga-machine-learning insert top-level-function
+                        myproject_kernel(input_1,layer9_out);
+            */
             // Allocate Buffer in Global Memory
             // Buffers are allocated using CL_MEM_USE_HOST_PTR for efficient memory and
             // Device-to-host communication
-            OCL_CHECK(err, cl::Buffer buffer_in1(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, 16*vector_size_bytes,
+            OCL_CHECK(err, cl::Buffer buffer_in1(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, 16 * vector_size_bytes,
                                                  source_in1.data(), &err));
-            //OCL_CHECK(err, cl::Buffer buffer_in2(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, vector_size_bytes,
-            //                                     source_in1.data(), &err));
-            OCL_CHECK(err, cl::Buffer buffer_output(context, CL_MEM_USE_HOST_PTR | CL_MEM_WRITE_ONLY, 5*vector_size_bytes,
+            // OCL_CHECK(err, cl::Buffer buffer_in2(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, vector_size_bytes,
+            //                                      source_in1.data(), &err));
+            OCL_CHECK(err, cl::Buffer buffer_output(context, CL_MEM_USE_HOST_PTR | CL_MEM_WRITE_ONLY, 5 * vector_size_bytes,
                                                     source_hw_results.data(), &err));
-                                                    
-
 
             uint32_t size = DATA_SIZE;
             OCL_CHECK(err, err = myproject_kernel.setArg(0, buffer_in1));
-            //OCL_CHECK(err, err = myproject_kernel.setArg(1, buffer_in1));
+            // OCL_CHECK(err, err = myproject_kernel.setArg(1, buffer_in1));
             OCL_CHECK(err, err = myproject_kernel.setArg(1, buffer_output));
             OCL_CHECK(err, err = myproject_kernel.setArg(2, size));
 
-            std::cout<<"Migrate Objects to FPGA"<<std::endl;
+            std::cout << "Migrate Objects to FPGA" << std::endl;
             // Copy input data to device global memory
-            OCL_CHECK(err, err = q.enqueueMigrateMemObjects({buffer_in1}, 0)); //0 means from host
+            OCL_CHECK(err, err = q.enqueueMigrateMemObjects({buffer_in1}, 0)); // 0 means from host
 
             // Launch the Kernel
             // For HLS kernels global and local size is always (1,1,1). So, it is
             // recommended
             // to always use enqueueTask() for invoking HLS kernel
-            std::cout<<"Enqueue Task"<<std::endl;
+            std::cout << "Enqueue Task" << std::endl;
             OCL_CHECK(err, err = q.enqueueTask(myproject_kernel));
 
             // Copy Result from Device Global Memory to Host Local Memory
-            std::cout<<"Migrate Objects to host"<<std::endl;
+            std::cout << "Migrate Objects to host" << std::endl;
             OCL_CHECK(err, err = q.enqueueMigrateMemObjects({buffer_output}, CL_MIGRATE_MEM_OBJECT_HOST));
-            std::cout<<"Wait to finish"<<std::endl;
-            //OCL_CHECK(err, err = q.finish());
+            std::cout << "Wait to finish" << std::endl;
+            // OCL_CHECK(err, err = q.finish());
             q.finish();
-            std::cout<<"Finished"<<std::endl;
+            std::cout << "Finished" << std::endl;
             if (e % CHECKPOINT == 0) {
                 std::cout << "Predictions" << std::endl;
                 // hls-fpga-machine-learning insert predictions
-                for(int i = 0; i < N_LAYER_8; i++) {
-                  std::cout << pr[i] << " ";
+                for (int i = 0; i < N_LAYER_8; i++) {
+                    std::cout << pr[i] << " ";
                 }
                 std::cout << std::endl;
                 std::cout << "Quantized predictions" << std::endl;
                 // hls-fpga-machine-learning insert quantized
-                //nnet::print_result<result_t, N_LAYER_8>(layer9_out, std::cout, true);
-                for ( size_t i = 0; i < N_LAYER_8; i++) {
+                // nnet::print_result<result_t, N_LAYER_8>(layer9_out, std::cout, true);
+                for (size_t i = 0; i < N_LAYER_8; i++) {
                     std::cout << source_hw_results[i] << " ";
                 }
                 std::cout << std::endl;
             }
             e++;
-            std::cout<<"e: "<< e << std::endl;
+            std::cout << "e: " << e << std::endl;
 
             // hls-fpga-machine-learning insert tb-output
-            //nnet::print_result<result_t, N_LAYER_8>(layer9_out, fout);
+            // nnet::print_result<result_t, N_LAYER_8>(layer9_out, fout);
         }
         fin.close();
         fpr.close();
     } else {
         std::cout << "INFO: Unable to open input/predictions file, using default input." << std::endl;
-/* [K] Do nothing when the input file can't be opened
-        // hls-fpga-machine-learning insert zero
-    hls::stream<input_t> input_1("input_1");
-    nnet::fill_zero<input_t, N_INPUT_1_1>(input_1);
-    hls::stream<result_t> layer9_out("layer9_out");
+        /* [K] Do nothing when the input file can't be opened
+                // hls-fpga-machine-learning insert zero
+            hls::stream<input_t> input_1("input_1");
+            nnet::fill_zero<input_t, N_INPUT_1_1>(input_1);
+            hls::stream<result_t> layer9_out("layer9_out");
 
-        // hls-fpga-machine-learning insert top-level-function
-        //myproject_kernel(input_1,layer9_out);
+                // hls-fpga-machine-learning insert top-level-function
+                //myproject_kernel(input_1,layer9_out);
 
-        // hls-fpga-machine-learning insert output
-        nnet::print_result<result_t, N_LAYER_8>(layer9_out, std::cout, true);
+                // hls-fpga-machine-learning insert output
+                nnet::print_result<result_t, N_LAYER_8>(layer9_out, std::cout, true);
 
-        // hls-fpga-machine-learning insert tb-output
-        nnet::print_result<result_t, N_LAYER_8>(layer9_out, fout);
-        std::cout<<"checkpoint"<<std::endl;
-*/
+                // hls-fpga-machine-learning insert tb-output
+                nnet::print_result<result_t, N_LAYER_8>(layer9_out, fout);
+                std::cout<<"checkpoint"<<std::endl;
+        */
     }
 
     fout.close();
-    //std::cout << "INFO: Saved inference results to file: " << RESULTS_LOG << std::endl;
+    // std::cout << "INFO: Saved inference results to file: " << RESULTS_LOG << std::endl;
     //[K] hls4ml code end
 
-
-//    std::cout << "TEST " << (match ? "PASSED" : "FAILED") << std::endl;
-//    return (match ? EXIT_SUCCESS : EXIT_FAILURE);
+    //    std::cout << "TEST " << (match ? "PASSED" : "FAILED") << std::endl;
+    //    return (match ? EXIT_SUCCESS : EXIT_FAILURE);
     return 0;
 }
