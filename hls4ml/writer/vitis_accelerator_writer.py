@@ -219,7 +219,6 @@ class VitisAcceleratorWriter(VitisWriter):
         """
         Write the HLS project. Calls the steps from VivadoWriter, adapted for Vitis
         """
-        print("[K] Vitis_accelerator_writer -> write_hls called\n\n\n\n")
         super().write_hls(model)
         self.write_nnet_utils_overrides(model)
         self.write_build_script_backend_override(model)
