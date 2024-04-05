@@ -10,10 +10,9 @@ from hls4ml.backends.vivado_accelerator.vivado_accelerator_config import VivadoA
 
 from hls4ml.backends.vitis.vitis_backend import VitisBackend  # isort: skip
 
-
 register_backend('Vivado', VivadoBackend)
 register_backend('VivadoAccelerator', VivadoAcceleratorBackend)
 register_backend('Vitis', VitisBackend)
-register_backend('VitisAccelerator', VitisAcceleratorBackend)  # [K]
+register_backend('VitisAccelerator', VitisAcceleratorBackend)
 register_backend('Quartus', QuartusBackend)
 register_backend('SymbolicExpression', SymbolicExpressionBackend)
