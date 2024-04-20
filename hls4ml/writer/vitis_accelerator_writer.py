@@ -113,6 +113,8 @@ class VitisAcceleratorWriter(VitisWriter):
         Args:
             model (ModelGraph): the hls4ml model.
         """
+        from hls4ml.backends import VitisAcceleratorConfig
+        vitis_accelerator_config = VitisAcceleratorConfig(model.config)
 
         filedir = os.path.dirname(os.path.abspath(__file__))
         f = open(os.path.join(filedir, '../templates/vitis_accelerator/myproject_host.cpp'))
@@ -127,6 +129,8 @@ class VitisAcceleratorWriter(VitisWriter):
                 newline = line.replace('myproject_kernel', format(model.config.get_project_name(), '_kernel'))
             elif 'output_dir' in line:
                 newline = line.replace('output_dir', format(model.config.get_output_dir()))
+            elif 'myplatform' in line:
+                newline = line.replace('myplatform', format(vitis_accelerator_config.get_platform()))
             else:
                 newline = line
             fout.write(newline)

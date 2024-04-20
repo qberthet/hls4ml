@@ -61,6 +61,24 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
+    std::string target_device = "myplatform";
+    auto device_type = target_device.substr(0, target_device.size() - 17);
+    std::cout << "Device type: " << device_type << std::endl;
+    std::cout << "xrt::device size " << sizeof(xrt::device) << std::endl;
+    for (int i = 0; i < sizeof(xrt::device); i++){
+      std::cout << "device[" << i << "] name:     " << xrt::device(i).get_info<xrt::info::device::name>() << "\n";
+      std::cout << "device[" << i << "] bdf:      " << xrt::device(i).get_info<xrt::info::device::bdf>() << "\n\n";
+      size_t found = xrt::device(i).get_info<xrt::info::device::name>().find(device_type);
+      if (found != std::string::npos){
+        std::cout << "Device: " << xrt::device(i).get_info<xrt::info::device::name>() << " found." << std::endl;
+        device_index = i;
+        std::cout << "Device index in loop: " <<device_index << std::endl;
+        break;
+      }
+        else{
+          std::cout << "Device not found" << std::endl;
+        }
+      }
     std::cout << "Open the device" << device_index << std::endl;
     auto device = xrt::device(device_index);
     std::cout << "Load the xclbin " << binaryFile << std::endl;
