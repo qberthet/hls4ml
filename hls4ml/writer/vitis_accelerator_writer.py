@@ -119,6 +119,8 @@ class VitisAcceleratorWriter(VitisWriter):
         filedir = os.path.dirname(os.path.abspath(__file__))
         f = open(os.path.join(filedir, '../templates/vitis_accelerator/myproject_host.cpp'))
         fout = open(f'{model.config.get_output_dir()}/{model.config.get_project_name()}_host.cpp', 'w')
+        model_inputs = model.get_input_variables()
+        model_outputs = model.get_output_variables()
 
         for line in f.readlines():
             if 'MYPROJECT' in line:
@@ -131,6 +133,10 @@ class VitisAcceleratorWriter(VitisWriter):
                 newline = line.replace('output_dir', format(model.config.get_output_dir()))
             elif 'myplatform' in line:
                 newline = line.replace('myplatform', format(vitis_accelerator_config.get_platform()))
+            elif 'mylayer_out' in line:
+                newline = line.replace('mylayer_out', format(model_outputs[-1].size_cpp())) 
+            elif 'myinput' in line:
+                newline = line.replace('myinput', format(model_inputs[-1].size_cpp()))
             else:
                 newline = line
             fout.write(newline)

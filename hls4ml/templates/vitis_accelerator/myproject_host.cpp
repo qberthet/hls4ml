@@ -161,7 +161,7 @@ int main(int argc, char **argv) {
             // Print contents of bo0_map
             std::cout << "Contents of bo0_map (Input):" << std::endl;
             for (int i = 0; i < DATA_SIZE; ++i) {
-                for (size_t j = 0; j < N_INPUT_1_1; j++) {
+                for (size_t j = 0; j < myinput; j++) {
                     std::cout << bo0_map[i][j] << " ";
                 }
             }
@@ -169,7 +169,7 @@ int main(int argc, char **argv) {
 
             std::cout << "Contents of bo0_out_map (Output):" << std::endl;
             for (int i = 0; i < DATA_SIZE; ++i) {
-                for (size_t j = 0; j < N_LAYER_8; j++) {
+                for (size_t j = 0; j < mylayer_out; j++) {
                     std::cout << bo0_out_map[i][j] << " ";
                 }
             }
@@ -180,7 +180,7 @@ int main(int argc, char **argv) {
             if (e % CHECKPOINT == 0) {
                 std::cout << "Predictions" << std::endl;
                 // hls-fpga-machine-learning insert predictions
-                for (int i = 0; i < N_LAYER_8; i++) {
+                for (int i = 0; i < mylayer_out; i++) {
                     std::cout << pr[i] << " ";
                 }
                 std::cout << std::endl;
@@ -214,7 +214,7 @@ int main(int argc, char **argv) {
 
         std::cout << "Contents of bo0_out_map (Output):" << std::endl;
         for (int i = 0; i < DATA_SIZE; ++i) {
-            for (size_t j = 0; j < N_LAYER_8; j++) {
+            for (size_t j = 0; j < mylayer_out; j++) {
                 std::cout << bo0_out_map[i][j] << " ";
             }
         }
