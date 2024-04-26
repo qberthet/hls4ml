@@ -13,6 +13,37 @@ class VitisAcceleratorBackend(VitisBackend):
         self._register_layer_attributes()
         self._register_flows()
 
+    def create_initial_config(
+        self,
+        board='alveo-u55c',
+        part=None,
+        clock_period=5,
+        io_type='io_parallel',
+        num_kernel=1,
+        num_thread=1,
+        batchsize=8192
+    ):
+        '''
+        Create initial accelerator config with default parameters
+
+        Args:
+            board: one of the keys defined in supported_boards.json
+            clock_period: clock period passed to hls project
+            io_type: io_parallel or io_stream
+            num_kernel: how many compute units to create on the fpga
+            num_thread: how many threads the host cpu uses to drive the fpga
+        Returns:
+            populated config
+        '''
+        board = board if board is not None else 'alveo-u55c'
+        config = super().create_initial_config(part, clock_period, io_type)
+        config['AcceleratorConfig'] = {}
+        config['AcceleratorConfig']['Board'] = board
+        config['AcceleratorConfig']['Num_Kernel'] = num_kernel
+        config['AcceleratorConfig']['Num_Thread'] = num_thread
+        config['AcceleratorConfig']['Batchsize'] = batchsize
+        return config
+
     def _register_flows(self):
         validation_passes = [
             'vitisaccelerator:validate_conv_implementation',
