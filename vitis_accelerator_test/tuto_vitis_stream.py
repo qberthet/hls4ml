@@ -1,11 +1,11 @@
 import hls4ml
+from hls4ml.backends import VitisAcceleratorConfig
 
 # Fetch a keras model from our example repository
 # This will download our example model to your working directory and return an example configuration file
 config = hls4ml.utils.fetch_example_model('KERAS_3layer.json')
 
 # You can print it to see some default parameters
-#print("[K] Print config:")
 #print(config)
 
 # Default config:
@@ -29,17 +29,17 @@ config = hls4ml.utils.fetch_example_model('KERAS_3layer.json')
 config['OutputDir'] = 'prj_tuto_vitis_stream'
 config['ProjectName'] = 'PrjTutoVitisStream'
 config['Backend'] = 'VitisAccelerator'
-config['Part'] = 'xcvc1902-vsvd1760-2MP-e-S'
+config['Part'] = 'xcu50-fsvh2104-2-e'
 config['IOType'] = 'io_stream'
+config['AcceleratorConfig'] = {}  # Initialize AcceleratorConfig as a dictionary
+config['AcceleratorConfig']['Platform'] = 'xilinx_u50_gen3x16_xdma_5_202210_1'
 
-#print("[K] Print config after setting up backend:")
-#print(config)
+print("[K] Print config after setting up backend:")
+print(config)
 
-#print("[K] Convert it to hls project")
 # Convert it to a hls project
 hls_model = hls4ml.converters.keras_to_hls(config)
 
-#print("[K] Print full list of example model if you want to explore more")
 ## Print full list of example model if you want to explore more
 #hls4ml.utils.fetch_example_list()
 

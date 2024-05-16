@@ -1,11 +1,3 @@
-import json
-import os
-
-import numpy as np
-
-from hls4ml.model.layers import FixedPrecisionType, IntegerPrecisionType
-
-
 class VitisAcceleratorConfig:
     def __init__(self, config):
         self.config = config.config

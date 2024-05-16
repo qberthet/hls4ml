@@ -1,4 +1,3 @@
-import glob
 import os
 from shutil import copy, copytree
 
@@ -51,29 +50,8 @@ class VitisAcceleratorWriter(VitisWriter):
             fout.write(newline)
         f.close()
         fout.close()
-    
-    def write_build_script_backend_override(self, model):
-#        try:
-#
-##            filedir = os.path.dirname(os.path.abspath(__file__))
-##            writerspath = os.path.join(filedir, '../writer')
-##            vitis_accelerator_writer_file = writerspath + "vitis_accelerator_writer.py"
-#            with open(model.config.get_output_dir() + '/project.tcl', 'r') as file:
-#                lines = file.readlines()
-#                print("[K]\n")
-#                print(lines)
-#
-#            with open(model.config.get_output_dir() + '/project.tcl', 'r', 'w') as file:
-#                print ('[K] overriding project.tcl')
-#                for line in lines:
-#                    if 'backend' in line:
-#                        index = line.find('backend')
-#                        line = line[:index] + 'backend ' + 'vitisaccelerator' + '\n'
-#                    file.write(line)
-#        
-#        except FileNotFoundError:
-#            print("File project.tcl not found.")
 
+    def write_build_script_backend_override(self, model):
         # project.tcl
         f = open(f'{model.config.get_output_dir()}/project.tcl', 'w')
         f.write('variable project_name\n')
@@ -276,7 +254,7 @@ class VitisAcceleratorWriter(VitisWriter):
         srcpath = os.path.join(filedir, '../templates/vitis_accelerator/nnet_utils/')
         dstpath = f'{model.config.get_output_dir()}/firmware/nnet_utils/'
         copy(srcpath + "nnet_types.h", dstpath + "nnet_types.h")
-    
+
     def write_hls(self, model):
         """
         Write the HLS project. Calls the steps from VivadoWriter, adapted for Vitis
