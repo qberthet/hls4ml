@@ -1,10 +1,5 @@
-import os
-import sys
-
-from hls4ml.backends import VitisBackend
-from hls4ml.backends import VivadoBackend
+from hls4ml.backends import VitisBackend, VivadoBackend
 from hls4ml.model.flow import get_flow, register_flow
-from hls4ml.report import parse_vivado_report
 
 
 class VitisAcceleratorBackend(VitisBackend):

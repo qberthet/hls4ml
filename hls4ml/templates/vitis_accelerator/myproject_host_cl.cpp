@@ -22,7 +22,7 @@ void runFPGAHelper(FpgaObj<in_buffer_t, out_buffer_t> &fpga) {
     fpga.write_ss_safe(ss.str());
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
     if (argc != 2) {
         std::cout << "Usage: " << argv[0] << " <XCLBIN Filename>" << std::endl;
         return EXIT_FAILURE;

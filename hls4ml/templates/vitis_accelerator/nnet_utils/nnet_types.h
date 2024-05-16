@@ -19,8 +19,8 @@ template <typename T, unsigned N> struct array {
     const T &operator[](size_t pos) const { return data[pos]; }
 
     array &operator=(const array &other) {
-//        if (&other == this)
-//            return *this;
+        //        if (&other == this)
+        //            return *this;
 
         assert(N == other.size && "Array sizes must match.");
 
