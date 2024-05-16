@@ -3,13 +3,16 @@ import os
 from shutil import copy, copytree
 
 from hls4ml.writer.vitis_writer import VitisWriter
-from hls4ml.backends import VitisAcceleratorConfig
+
 
 class VitisAcceleratorWriter(VitisWriter):
     def __init__(self):
+        
         super().__init__()
 
     def create_accelerator_config(self, model):
+        from hls4ml.backends import VitisAcceleratorConfig
+
         self.vitis_accelerator_config = VitisAcceleratorConfig(model.config)
 
     def write_parameters_overrides(self, model):
@@ -91,32 +94,35 @@ class VitisAcceleratorWriter(VitisWriter):
         Args:
             model (ModelGraph): the hls4ml model.
         """
+        from hls4ml.backends import VitisAcceleratorConfig
 
         filedir = os.path.dirname(os.path.abspath(__file__))
         io_type = model.config.get_config_value("IOType")
 
         # Writing header file
-        f_header = open(os.path.join(filedir, '../templates/vitis_accelerator/kernel_wrapper_parallel_template.h'))
+        f_header = open(os.path.join(filedir, '../templates/vitis_accelerator/kernel_wrapper.h'))
         fout_header = open(f'{model.config.get_output_dir()}/kernel_wrapper.h', 'w')
         model_inputs = model.get_input_variables()
         model_outputs = model.get_output_variables()
         for line in f_header.readlines():
             if '// hls-fpga-machine-learning accelerator parameters' in line:
-                newline += '#define NUM_CU ' + format(self.vitis_accelerator_config.get_kernelcount()) + '\n'
-                newline += '#define NUM_THREAD ' + format(self.vitis_accelerator_config.get_threadcount()) + '\n'
+                newline = ''
+                newline += '#define NUM_CU ' + format(self.vitis_accelerator_config.get_num_kernel()) + '\n'
+                newline += '#define NUM_THREAD ' + format(self.vitis_accelerator_config.get_num_thread()) + '\n'
                 newline += '#define NUM_CHANNEL '
                 if self.vitis_accelerator_config.get_memory_type() == 'hbm':
-                    newline += format(self.vitis_accelerator_config.get_memory_channel_count // (2 * self.vitis_accelerator_config.get_num_kernel())) + '\n'
+                    newline += format(self.vitis_accelerator_config.get_memory_channel_count() // (2 * self.vitis_accelerator_config.get_num_kernel())) + '\n'
                 elif self.vitis_accelerator_config.get_memory_type() == 'ddr':
                     newline += '1\n'
-                newline += '#define BATCHSIZE ' + format(self.vitis_accelerator_config.get_threadcount()) + '\n'
+                newline += '#define BATCHSIZE ' + format(self.vitis_accelerator_config.get_batchsize()) + '\n'
             elif '// hls-fpga-machine-learning accelerator io' in line:
+                newline = ''
                 if io_type == 'io_parallel':
                     for inp in model_inputs:
                         for out in model_outputs:
                             newline += '#define DATA_SIZE_IN ' + format(inp.size_cpp()) + '\n'
                             newline += '#define INSTREAMSIZE (BATCHSIZE * DATA_SIZE_IN)' + '\n\n'
-                            newline += '#define DATA_SIZE_OUT' + format(out.size_cpp()) + '\n'
+                            newline += '#define DATA_SIZE_OUT ' + format(out.size_cpp()) + '\n'
                             newline += '#define OUTSTREAMSIZE (BATCHSIZE * DATA_SIZE_OUT)' + '\n\n'
                             newline += 'typedef ' + format(inp.type.name) + ' in_buffer_t\n'
                             newline += 'typedef ' + format(out.type.name) + ' out_buffer_t\n'
@@ -128,7 +134,7 @@ class VitisAcceleratorWriter(VitisWriter):
                             newline += '#define DATA_SIZE_IN ' + ' * '.join(dims) + '\n'
                             newline += '#define NNET_ARRAY_DEPTH ' + format(nnet_array_depth) + '\n'
                             newline += '#define INSTREAMSIZE (BATCHSIZE * DATA_SIZE_IN * NNET_ARRAY_DEPTH)' + '\n\n'
-                            newline += '#define DATA_SIZE_OUT' + format(out.size_cpp()) + '\n'
+                            newline += '#define DATA_SIZE_OUT ' + format(out.size_cpp()) + '\n'
                             newline += '#define OUTSTREAMSIZE (BATCHSIZE * DATA_SIZE_OUT)' + '\n\n'
                             precision_str = model.config.backend.convert_precision_string(model.config.model_precision.get('default'))
                             newline += 'typedef ' + precision_str + ' in_buffer_t\n'
@@ -137,11 +143,12 @@ class VitisAcceleratorWriter(VitisWriter):
                 newline = line
             fout_header.write(newline)
         f_header.close()
+        fout_header.close()
 
         # Writing source file
-        f_source = os.path.join(filedir, '../templates/vitis_accelerator/kernel_wrapper_' + io_type +'.cpp')
+        f_source = open(os.path.join(filedir, '../templates/vitis_accelerator/kernel_wrapper_' + io_type +'.cpp'))
         fout_source = open(f'{model.config.get_output_dir()}/kernel_wrapper.cpp', 'w')
-        for line in f_header.readlines():
+        for line in f_source.readlines():
             if 'myproject' in line:
                 newline = line.replace('myproject', format(model.config.get_project_name()))
             else:
@@ -157,6 +164,8 @@ class VitisAcceleratorWriter(VitisWriter):
         Args:
             model (ModelGraph): the hls4ml model.
         """
+        from hls4ml.backends import VitisAcceleratorConfig
+
         # Write host code
         filedir = os.path.dirname(os.path.abspath(__file__))
         f = open(os.path.join(filedir, '../templates/vitis_accelerator/myproject_host_cl.cpp'))
@@ -175,7 +184,7 @@ class VitisAcceleratorWriter(VitisWriter):
 
         # Write libraries
         src = os.path.join(filedir, '../templates/vitis_accelerator/libs')
-        dst = format(model.config.get_output_dir())
+        dst = f'{model.config.get_output_dir()}/libs'
         copytree(src, dst, copy_function=copy)
 
     def write_makefile(self, model):
@@ -204,7 +213,9 @@ class VitisAcceleratorWriter(VitisWriter):
         Args:
             model (ModelGraph): the hls4ml model.
         """
+        from hls4ml.backends import VitisAcceleratorConfig
 
+        # Write accelerator_card.cfg
         filedir = os.path.dirname(os.path.abspath(__file__))
         f = open(os.path.join(filedir, '../templates/vitis_accelerator/accelerator_card.cfg'))
         fout = open(f'{model.config.get_output_dir()}/accelerator_card.cfg', 'w')
@@ -229,7 +240,7 @@ class VitisAcceleratorWriter(VitisWriter):
                 newline = line.replace('MYPLATFORM', format(self.vitis_accelerator_config.get_platform()))
             elif '# hls-fpga-machine-learning kernel control' in line:
                 newline = '[connectivity]\n'
-                newline += 'nk=kernel_wrapper:{}\n\n'.format(num_channels)
+                newline += 'nk=kernel_wrapper:' + format(num_kernels) + '\n\n'
                 if memory_type == 'hbm':
                     for i in range(0, num_kernels):
                         newline += 'sp=kernel_wrapper_{}.in:HBM[{}:{}]\n'.format(i + 1, (i*2)*num_channels_per_cu, ((i*2 + 1)*num_channels_per_cu) - 1)
@@ -247,6 +258,13 @@ class VitisAcceleratorWriter(VitisWriter):
         f.close()
         fout.close()
 
+        # Copy hls_config.tcl
+        filedir = os.path.dirname(os.path.abspath(__file__))
+        srcpath = os.path.join(filedir, '../templates/vitis_accelerator/hls_config.tcl')
+        dstpath = f'{model.config.get_output_dir()}/hls_config.tcl'
+        copy(srcpath, dstpath)
+
+
     def write_nnet_utils_overrides(self, model):
         """Override nnet_types.h pointer comparison
 
@@ -263,8 +281,8 @@ class VitisAcceleratorWriter(VitisWriter):
         """
         Write the HLS project. Calls the steps from VivadoWriter, adapted for Vitis
         """
-        print("[K] Vitis_accelerator_writer -> write_hls called\n\n\n\n")
         super().write_hls(model)
+        print("\n\nWriting Accelerator code")
         self.create_accelerator_config(model)
         self.write_nnet_utils_overrides(model)
         self.write_build_script_backend_override(model)
@@ -273,3 +291,4 @@ class VitisAcceleratorWriter(VitisWriter):
         self.write_host(model)
         self.write_makefile(model)
         self.write_accelerator_card_cfg(model)
+        print("Done")

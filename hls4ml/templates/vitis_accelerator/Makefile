@@ -1,22 +1,22 @@
-# Absolute path to top directory of Git repository
+# Absolute path to top directory of accelerator project
 PWD = $(shell readlink -f .)
 
-#Checks for XILINX_VITIS
+# Checks for XILINX_VITIS
 ifndef XILINX_VITIS
 $(error XILINX_VITIS variable is not set, please set correctly and rerun)
 endif
 
-#Checks for XILINX_XRT
+# Checks for XILINX_XRT
 ifndef XILINX_XRT
 $(error XILINX_XRT variable is not set, please set correctly and rerun)
 endif
 
-#Checks for XILINX_VIVADO
+# Checks for XILINX_VIVADO
 ifndef XILINX_VIVADO
 $(error XILINX_VIVADO variable is not set, please set correctly and rerun)
 endif
 
-#Checks for g++
+# Checks for g++
 ifneq ($(shell expr $(shell g++ -dumpversion) \>= 5), 1)
 CXX := $(XILINX_VIVADO)/tps/lnx64/gcc-6.2.0/bin/g++
 $(warning [WARNING]: g++ version older. Using g++ provided by the tool : $(CXX))
@@ -50,7 +50,7 @@ kernel: myproject_kernel.xclbin
 # Cleaning stuff
 .PHONY: clean
 clean:
-	-rm -rf host libs/*.o
+	-rm -rf host
 	-rm -rf *.xclbin*
 	-rm -rf build*
 	-rm -rf *.log *.jou *.rpt *.csv *.mdb *.ltx
