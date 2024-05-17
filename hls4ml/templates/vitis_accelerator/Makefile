@@ -30,10 +30,10 @@ all: host kernel
 # Building kernel
 ./build/myproject_kernel.xo: kernel_wrapper.cpp
 	mkdir -p ./build
-	v++ -c -t hw --config ./u55c.cfg kernel_wrapper.cpp firmware/myproject.cpp -o ./build/myproject_kernel.xo $(KERN_LIBRARIES)
+	v++ -c -t hw --config ./accelerator_card.cfg kernel_wrapper.cpp firmware/myproject.cpp -o ./build/myproject_kernel.xo $(KERN_LIBRARIES)
  
 myproject_kernel.xclbin: ./build/myproject_kernel.xo
-	v++ -l -t hw --config ./u55c.cfg ./build/myproject_kernel.xo -o kernel_wrapper.xclbin
+	v++ -l -t hw --config ./accelerator_card.cfg ./build/myproject_kernel.xo -o kernel_wrapper.xclbin
 
 # Building Host 
 INCLUDES += -I$(XILINX_XRT)/include/ -I$(XILINX_VIVADO)/include/ -I$(XILINX_HLS)/include/ \
