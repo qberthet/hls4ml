@@ -13,8 +13,7 @@ class VitisAcceleratorConfig:
         if self.board in self.supported_boards.keys():
             board_info = self.supported_boards[self.board]
             self.part = board_info['part']
-            if self.board.startswith('alveo'):
-                self.platform = board_info['platform']
+            self.platform = board_info['platform']
             self.memory_type = board_info['memory']['type']
             self.memory_channel_count = board_info['memory']['channels']
         else:
