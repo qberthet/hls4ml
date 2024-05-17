@@ -12,6 +12,7 @@ class VitisAcceleratorConfig:
         self.supported_boards = json.load(open(os.path.dirname(__file__) + '/supported_boards.json'))
         if self.board in self.supported_boards.keys():
             board_info = self.supported_boards[self.board]
+            self.board_type = board_info['board_type']
             self.part = board_info['part']
             self.platform = board_info['platform']
             self.memory_type = board_info['memory']['type']
@@ -30,6 +31,9 @@ class VitisAcceleratorConfig:
         self.num_kernel = accel_config.get('Num_Kernel')
         self.num_thread = accel_config.get('Num_Thread')
         self.batchsize = accel_config.get('Batchsize')        
+
+    def get_board_type(self):
+        return self.board_type
 
     def get_platform(self):
         return self.platform
