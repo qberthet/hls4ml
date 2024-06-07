@@ -25,7 +25,7 @@ template <typename T, unsigned N> struct array {
         assert(N == other.size && "Array sizes must match.");
 
         for (unsigned i = 0; i < N; i++) {
-            #pragma HLS UNROLL
+#pragma HLS UNROLL
             data[i] = other[i];
         }
         return *this;
