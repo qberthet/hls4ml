@@ -1,10 +1,12 @@
 #pragma once
 
+#include <chrono>
+#include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <list>
 #include <mutex>
-#include <string>
+#include <numeric>
 #include <vector>
 
 #include "Types.hpp"
@@ -103,7 +105,9 @@ template <class T, class U> class Worker {
      * \brief Evaluates each batch of data provided via dataTracker. Uses float datatype
      * \param dataTracker Vector of input locations to read from and output locations to write to
      */
-    void evalLoop(std::list<Batch<T, U>> &dataTracker) {
+    void evalLoop(std::list<Batch<T, U>> &dataTracker, std::vector<double> &latency_out) {
+
+        std::vector<double> local_latencies;
 
         while (!dataTracker.empty()) {
             // Copy inputs into memory-mapped buffer
@@ -111,14 +115,20 @@ template <class T, class U> class Worker {
             const T *dataLoc = dataTracker.front().dataIn;
             memcpy(&memmap_in[0], dataLoc, _batchsize * _sampleInputSize * sizeof(T));
 
-            // Evaluate
+            auto start = std::chrono::system_clock::now();
             evaluate();
+            auto end = std::chrono::system_clock::now();
+
+            double elapsed_ms = std::chrono::duration<double, std::milli>(end - start).count();
+            local_latencies.push_back(elapsed_ms);
 
             // Copy outputs into persistent results vector
             U *resLoc = dataTracker.front().dataOut;
             memcpy(resLoc, &memmap_out[0], _batchsize * _sampleOutputSize * sizeof(U));
             dataTracker.pop_front();
         }
+
+        latency_out = std::move(local_latencies);
     }
 
   private:

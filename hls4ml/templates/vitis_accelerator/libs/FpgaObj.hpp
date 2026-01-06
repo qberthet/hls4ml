@@ -169,6 +169,9 @@ template <class T, class U> class FpgaObj {
      * \brief Workers evaluate all loaded data. Each worker uses a separate thread.
      */
     void evaluateAll() {
+
+        std::vector<std::vector<double>> all_latencies(_numCU * _workersPerCU * _numDevice);
+
         // Check that data has been loaded and batched
         if (batchedData.size() == 0 || db == nullptr) {
             throw std::runtime_error("No data loaded");
@@ -181,7 +184,8 @@ template <class T, class U> class FpgaObj {
         std::vector<std::thread> accelThreads;
         accelThreads.reserve(_numCU * _workersPerCU * _numDevice);
         for (int i = 0; i < _numCU * _workersPerCU * _numDevice; i++) {
-            accelThreads.emplace_back([this, i]() { this->workers[i].evalLoop(this->batchedData[i]); });
+            accelThreads.emplace_back(
+                [this, i, &all_latencies]() { this->workers[i].evalLoop(this->batchedData[i], all_latencies[i]); });
         }
         for (int i = 0; i < _numCU * _workersPerCU * _numDevice; i++) {
             accelThreads[i].join();
@@ -207,6 +211,22 @@ template <class T, class U> class FpgaObj {
             std::cout << "Utilized throughput: " << throughput << " predictions/second" << std::endl;
             std::cout << "Max possible throughput: " << maxThroughput << " predictions/second" << std::endl;
         }
+
+        // Merge all latencies
+        std::vector<double> merged_latencies;
+        for (const auto &latencies : all_latencies) {
+            merged_latencies.insert(merged_latencies.end(), latencies.begin(), latencies.end());
+        }
+
+        // Compute mean/std
+        double sum = std::accumulate(merged_latencies.begin(), merged_latencies.end(), 0.0);
+        double mean = sum / merged_latencies.size();
+
+        double sq_sum = std::inner_product(merged_latencies.begin(), merged_latencies.end(), merged_latencies.begin(), 0.0);
+        double stddev = std::sqrt(sq_sum / merged_latencies.size() - mean * mean);
+
+        std::cout << "Batch latency: mean: " << mean << " ms, std: " << stddev << " ms, count: " << merged_latencies.size()
+                  << std::endl;
     }
 
     void checkResults(const std::string &ref) {
